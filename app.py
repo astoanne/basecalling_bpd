@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from datetime import datetime
 import shutil
+import subprocess
 import tempfile
 from matplotlib import pyplot as plt
 import streamlit as st
@@ -51,6 +52,31 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     temp_file = f"{output_folder}/tempfile_for_alignment.fq"
     original_acc_temp_sam_file = f"{output_folder}/tempfile_for_alignment.sam"
     generate_fastq(io_read_original.seq, temp_file, read_id, quality_char="I")
+
+    ################make minimap
+    minimap2_dir = Path("minimap2")  # Replace with the actual path to minimap2 source
+    minimap2_binary = minimap2_dir / "minimap2"
+
+    # Recompile minimap2 every time
+    try:
+        print(f"Compiling minimap2 in {minimap2_dir}")
+        subprocess.run(["make"], cwd=minimap2_dir, check=True)
+        print("Compilation successful.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error during compilation: {e.stderr}")
+        raise
+
+    # Verify the binary
+    if not minimap2_binary.exists():
+        raise FileNotFoundError(f"Minimap2 binary not found at {minimap2_binary} after compilation.")
+
+
+
+    ####################make minimap####
+
+
+
+
     command = f'minimap2/minimap2 -ax lr:hq "{reference_filepath}" "{temp_file}" > "{original_acc_temp_sam_file}"'
     print(f"Running command: {command}") 
     os.system(command)

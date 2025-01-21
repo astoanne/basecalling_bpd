@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from datetime import datetime
 import shutil
-import subprocess
 import tempfile
 from matplotlib import pyplot as plt
 import streamlit as st
@@ -54,25 +53,14 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     generate_fastq(io_read_original.seq, temp_file, read_id, quality_char="I")
 
     ################make minimap
-    minimap2_dir = Path("minimap2")  # Replace with the actual path to minimap2 source
-    minimap2_binary = minimap2_dir / "minimap2"
-
-    # Recompile minimap2 every time
-    try:
-        print(f"Compiling minimap2 in {minimap2_dir}")
-        subprocess.run(["make"], cwd=minimap2_dir, check=True)
-        print("Compilation successful.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error during compilation: {e.stderr}")
-        raise
-
-    # Verify the binary
-    if not minimap2_binary.exists():
-        raise FileNotFoundError(f"Minimap2 binary not found at {minimap2_binary} after compilation.")
 
 
 
-    ####################make minimap####
+
+
+
+
+    ########################
 
 
 

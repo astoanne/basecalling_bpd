@@ -472,6 +472,13 @@ if __name__ == "__main__":
     # original_aligned_path = test_data_root / "dorado-basecalled-result-aligned-mv-tables-fast.bam"
     test_data_root = Path(".") / "data"
     output_folder = test_data_root / "realigned"
+
+
+    # Ensure the directories exist
+    os.makedirs(test_data_root, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
+
+
     edited_path =  test_data_root / edited_filename
     output_path = output_folder / edited_filename
     # File uploaders for all required files

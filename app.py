@@ -524,18 +524,19 @@ if __name__ == "__main__":
         
         main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename)
     else:
-        if st.button("Use sample"):
-            input_dir=Path(".") / "input"
-            pod5_path = input_dir / 'signal.pod5'
-            input_path = input_dir / 'unaligned.bam'
-            original_aligned_path = input_dir / 'aligned.bam'
-            reference_filepath = input_dir / 'chr13.mmi'
-            second_aligned_path = input_dir / 'second.bam'
-            # Display confirmation of processed files
-            st.write(f"Files used:")
-            st.write(f"- POD5 File: {pod5_path}")
-            st.write(f"- Input BAM: {input_path}")
-            st.write(f"- Original Aligned BAM: {original_aligned_path}")
-            st.write(f"- Reference File: {reference_filepath}")
-            st.write(f"- Second Aligned BAM: {second_aligned_path}")  
-            main(test_data_root,"fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138",input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename)
+        st.write("Please upload all required files.")
+        # if st.button("Use sample"):
+        #     input_dir=Path(".") / "input"
+        #     pod5_path = input_dir / 'signal.pod5'
+        #     input_path = input_dir / 'unaligned.bam'
+        #     original_aligned_path = input_dir / 'aligned.bam'
+        #     reference_filepath = input_dir / 'chr13.mmi'
+        #     second_aligned_path = input_dir / 'second.bam'
+        #     # Display confirmation of processed files
+        #     st.write(f"Files used:")
+        #     st.write(f"- POD5 File: {pod5_path}")
+        #     st.write(f"- Input BAM: {input_path}")
+        #     st.write(f"- Original Aligned BAM: {original_aligned_path}")
+        #     st.write(f"- Reference File: {reference_filepath}")
+        #     st.write(f"- Second Aligned BAM: {second_aligned_path}")  
+        #     main(test_data_root,"fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138",input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename)

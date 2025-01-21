@@ -1,0 +1,10 @@
+streamlit
+matplotlib
+numpy
+scipy
+biopython
+pysam
+pandas
+ont-remora
+pod5
+ruptures

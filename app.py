@@ -17,19 +17,7 @@ from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indi
 from app.cigar_utils import extract_cigar_strings
 from app.core import batch_edit_bam
 from app.utils import diff_str, find_floor_index
-
-if not os.path.exists("minimap2"):
-    os.system("git clone https://github.com/lh3/minimap2")
-    os.system(f"{sys.executable} -m pip install -U setuptools wheel")  # Ensure build tools are installed
-    os.system("cd minimap2 && python setup.py install")
-
-# Now import the mappy module
-try:
-    import mappy as mp
-    print("Successfully imported mappy!")
-except ImportError:
-    print("Failed to import mappy. Check if minimap2 was installed properly.")
-
+import mappy as mp
 def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
 

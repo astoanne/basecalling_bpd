@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import pod5
 from app.accuracy import calculate_accuracy_error_qscore_from_md_and_cigar, compute_accuracy, compute_accuracy_from_cigar_and_nm, pretty_print_acc
-from app.bam_utils import extract_md_tag, generate_fastq, get_cigar_and_md_tag
+from app.bam_utils import extract_md_tag, generate_fastq, generate_sam_file, get_cigar_and_md_tag
 from app.bpd_gradients import analyze_signal_gradients, analyze_signal_gradients_no_plot
 from app.bpd_ruptures import analyze_ruptures_breakpoints
 from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indices, match_breakpoints, mismatch_regions_with_pairwisealigner, plot_breakpoints_with_labels
@@ -19,7 +19,7 @@ from app.utils import diff_str, find_floor_index
 import mappy as mp
 
 
-def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename):
+def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
 
     
@@ -463,7 +463,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     st.subheader("Accuracy")
     # temp_file = f"{output_folder}/tempfile_for_alignment.fq"
     # generate_fastq(new_seq1, temp_file, read_id, quality_char="I")
-    # sam_file = f"{output_folder}/{edited_filename}"
+    
     # # Step 1: Run the command using the variable
     # command = f'minimap2/minimap2 -ax lr:hq "{reference_filepath}" "{temp_file}" > "{sam_file}"'
     # # command = f'~/dorado/bin/dorado aligner "{reference_filepath}" "{edited_path}" --output-dir "{output_folder}"'
@@ -502,7 +502,12 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         # st.markdown(f"**Original CIGAR String:** `{io_read_original.full_align['cigar']}`")
         st.markdown(f"**Original CIGAR String:** `{cigar_ori}`")
         st.markdown(f"**New CIGAR String:** `{cigar_new}`")
-    st.write(f"Edited file stored in: `{edited_path}`")
+
+    sam_output_file = f"{output_folder}/{edited_filename}.sam"
+    generate_sam_file(reference_filepath, new_seq1, sam_output_file, read_id, quality_char="I")
+    st.write(f"Edited file stored in: `{edited_path}`, and re-alignment information stored in: `{sam_output_file}`")
+
+    
 
 
 
@@ -530,8 +535,8 @@ if __name__ == "__main__":
     st.title("Improved Basecalling with Breakpoint Detection")
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-    edited_filename = f"edited-{timestamp}.bam"
-    print("edited_bam will be stored in: "+edited_filename)
+    edited_filename = f"edited-{timestamp}"
+    print("edited_bam will be stored in: "+edited_filename+'.bam')
     # st.markdown(f"### Edited BAM will be stored in:\n`{edited_filename}`")
     
 
@@ -539,15 +544,15 @@ if __name__ == "__main__":
     # original_aligned_path = test_data_root / "dorado-basecalled-result-aligned-mv-tables-fast.bam"
     test_data_root = Path(".") / "data"
     output_folder = test_data_root / "realigned"
-
+    
 
     # Ensure the directories exist
     os.makedirs(test_data_root, exist_ok=True)
     os.makedirs(output_folder, exist_ok=True)
 
 
-    edited_path =  test_data_root / edited_filename
-    output_path = output_folder / edited_filename
+    edited_path = test_data_root / f"{edited_filename}.bam"
+    # output_path = output_folder / f"{edited_filename}.bam"
     # File uploaders for all required files
     uploaded_pod5_file = st.file_uploader("Upload your POD5 file", type=["pod5"])
     uploaded_input_file = st.file_uploader("Upload your unaligned BAM file", type=["bam"])
@@ -618,7 +623,7 @@ if __name__ == "__main__":
         # st.write(f"- Reference File: {reference_filepath}")
         # st.write(f"- Second Aligned BAM: {second_aligned_path}")       
         
-        main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename)
+        main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename)
     else:
         # st.write("Please upload all required files.")
         if st.button("Use sample"):
@@ -635,4 +640,4 @@ if __name__ == "__main__":
             st.write(f"- Original Aligned BAM: {original_aligned_path}")
             st.write(f"- Reference File: {reference_filepath}")
             st.write(f"- Second Aligned BAM: {second_aligned_path}")  
-            main(test_data_root,"fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138",input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,output_path,edited_filename)
+            main(test_data_root,"fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138",input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename)

@@ -1,5 +1,6 @@
 import pysam
 import re
+import mappy as mp
 def extract_md_tag(io_read):
     """
     Extract the MD tag value (excluding the 'MD:Z:' prefix) from the alignment data.
@@ -121,3 +122,41 @@ def generate_fastq(sequence, output_file, read_id, quality_char="I"):
         fq.write(f"{sequence}\n")      # Sequence
         fq.write("+\n")                # Separator
         fq.write(f"{quality_scores}\n")  # Quality scores
+
+def generate_sam_file(reference_filepath, query_seq, sam_output_path, read_id="query1", quality_char="I"):
+    # Initialize the aligner
+    aligner = mp.Aligner(str(reference_filepath), preset="map-hifi")  # Preset for high-quality reads
+    if not aligner:
+        raise Exception("Failed to initialize the aligner.")
+
+    # Open the SAM file for writing
+    with open(sam_output_path, 'w') as sam_file:
+        # Write the SAM header
+        sam_file.write(f"@HD\tVN:1.6\tSO:unsorted\n")
+        for ref_name in aligner.seq_names:  # seq_names is a list of reference names
+            ref_seq = aligner.seq(ref_name)  # Retrieve the sequence for this reference
+            ref_len = len(ref_seq)  # Get the length of the reference sequence
+            sam_file.write(f"@SQ\tSN:{ref_name}\tLN:{ref_len}\n")
+
+        # Perform alignment
+        for aln in aligner.map(query_seq):
+            if aln.is_primary:  # Check if it's the primary alignment
+                # Generate the SAM format fields
+                flag = 0  # Adjust flags based on read orientation, etc.
+                rname = aln.ctg
+                pos = aln.r_st + 1  # 1-based position
+                mapq = aln.mapq
+                cigar = aln.cigar_str
+                rnext = "*"  # No reference for paired-end reads
+                pnext = 0
+                tlen = 0
+                seq = query_seq
+                qual = quality_char * len(query_seq)
+
+                # Compute NM tag (number of mismatches)
+                nm = aln.NM
+
+                # Write the alignment line to the SAM file
+                sam_file.write(f"{read_id}\t{flag}\t{rname}\t{pos}\t{mapq}\t{cigar}\t{rnext}\t{pnext}\t{tlen}\t{seq}\t{qual}\tNM:i:{nm}\n")
+
+    print(f"SAM file generated at: {sam_output_path}")

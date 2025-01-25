@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 from datetime import datetime
-import shutil
-import tempfile
 from matplotlib import pyplot as plt
 import pysam
 import streamlit as st

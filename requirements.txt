@@ -8,3 +8,4 @@ pandas
 ont-remora
 pod5
 ruptures
+mappy

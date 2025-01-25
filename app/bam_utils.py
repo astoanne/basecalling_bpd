@@ -1,6 +1,16 @@
+import os
 import pysam
 import re
-import mappy as mp
+if not os.path.exists("minimap2"):
+    os.system("cd minimap2 && python setup.py install")
+
+# Now import the mappy module
+try:
+    import mappy as mp
+    print("Successfully imported mappy!")
+except ImportError:
+    print("Failed to import mappy. Check if minimap2 was installed properly.")
+
 def extract_md_tag(io_read):
     """
     Extract the MD tag value (excluding the 'MD:Z:' prefix) from the alignment data.

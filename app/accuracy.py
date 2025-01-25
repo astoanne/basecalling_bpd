@@ -209,3 +209,55 @@ def compute_accuracy(sam_file):
         "insertions": total_insertions,
         "deletions": total_deletions,
     }
+def compute_accuracy_from_cigar_and_nm(cigar, nm):
+    """
+    Compute accuracy, error rate, and related metrics from CIGAR string and mismatch count.
+
+    Args:
+        cigar (str): The CIGAR string (e.g., "34M2I1D").
+        nm (int): The number of mismatches.
+
+    Returns:
+        dict: A dictionary with accuracy, error rate, Q-score, and counts of matches, mismatches, insertions, and deletions.
+    """
+    # Initialize counts
+    total_bases = 0
+    total_matches = 0
+    total_mismatches = 0
+    total_insertions = 0
+    total_deletions = 0
+
+    try:
+        # Parse the CIGAR string
+        matches = sum(int(x) for x in re.findall(r'(\d+)M', cigar))
+        insertions = sum(int(x) for x in re.findall(r'(\d+)I', cigar))
+        deletions = sum(int(x) for x in re.findall(r'(\d+)D', cigar))
+
+        # Compute mismatches from NM (subtracting insertions and deletions)
+        mismatches = nm - insertions - deletions
+
+        # Update totals
+        aligned_bases = matches + insertions + deletions + mismatches
+        total_bases += aligned_bases
+        total_matches += matches
+        total_insertions += insertions
+        total_deletions += deletions
+        total_mismatches += mismatches
+
+        # Compute metrics
+        accuracy = (total_matches / total_bases) if total_bases > 0 else 0
+        error_rate = 1 - accuracy  # Error rate is the complement of accuracy
+        qscore = -10 * math.log10(error_rate) if accuracy < 1 and error_rate > 0 else float('inf')  # Q-score
+
+        return {
+            "accuracy": accuracy,  # Full precision
+            "error_rate": error_rate,  # Full precision
+            "qscore": qscore,  # Full precision
+            "matches": total_matches,
+            "mismatches": total_mismatches,
+            "insertions": total_insertions,
+            "deletions": total_deletions,
+        }
+
+    except Exception as e:
+        raise ValueError(f"Error processing CIGAR string or NM value: {e}")

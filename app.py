@@ -16,8 +16,16 @@ from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indi
 from app.cigar_utils import extract_cigar_strings
 from app.core import batch_edit_bam
 from app.utils import diff_str, find_floor_index
-import mappy as mp
 
+if not os.path.exists("minimap2"):
+    os.system("cd minimap2 && python setup.py install")
+
+# Now import the mappy module
+try:
+    import mappy as mp
+    print("Successfully imported mappy!")
+except ImportError:
+    print("Failed to import mappy. Check if minimap2 was installed properly.")
 
 def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
@@ -531,6 +539,7 @@ if __name__ == "__main__":
 
     # Run the Streamlit app
     # os.system(f"streamlit run app.py --server.port={port} --server.address=0.0.0.0")
+    
 
     st.title("Improved Basecalling with Breakpoint Detection")
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")

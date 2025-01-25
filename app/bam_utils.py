@@ -1,7 +1,10 @@
 import os
+import sys
 import pysam
 import re
 if not os.path.exists("minimap2"):
+    os.system("git clone https://github.com/lh3/minimap2")
+    os.system(f"{sys.executable} -m pip install -U setuptools wheel")  # Ensure build tools are installed
     os.system("cd minimap2 && python setup.py install")
 
 # Now import the mappy module
@@ -10,7 +13,6 @@ try:
     print("Successfully imported mappy!")
 except ImportError:
     print("Failed to import mappy. Check if minimap2 was installed properly.")
-
 def extract_md_tag(io_read):
     """
     Extract the MD tag value (excluding the 'MD:Z:' prefix) from the alignment data.

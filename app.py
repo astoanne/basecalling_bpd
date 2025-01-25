@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import datetime
+import sys
 from matplotlib import pyplot as plt
 import pysam
 import streamlit as st
@@ -18,6 +19,8 @@ from app.core import batch_edit_bam
 from app.utils import diff_str, find_floor_index
 
 if not os.path.exists("minimap2"):
+    os.system("git clone https://github.com/lh3/minimap2")
+    os.system(f"{sys.executable} -m pip install -U setuptools wheel")  # Ensure build tools are installed
     os.system("cd minimap2 && python setup.py install")
 
 # Now import the mappy module

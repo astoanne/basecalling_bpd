@@ -27,5 +27,27 @@ def find_floor_index(arr, num):
     # Get the index of that value
     return np.where(arr == floor_val)[0][0]
 
+def clean_list(input_list):
+    """
+    Convert all NumPy integers (e.g., np.int64) in a list to Python int.
+    Other data types in the list remain unchanged.
 
+    Parameters
+    ----------
+    input_list : list
+        A list that may contain NumPy integer types and/or other data.
+
+    Returns
+    -------
+    list
+        A new list where all NumPy integers have been converted to Python ints.
+    """
+    cleaned = []
+    for item in input_list:
+        # Check if item is a NumPy integer
+        if isinstance(item, np.integer):
+            cleaned.append(int(item))  # convert to Python int
+        else:
+            cleaned.append(item)
+    return cleaned
 

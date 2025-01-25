@@ -16,7 +16,7 @@ from app.bpd_ruptures import analyze_ruptures_breakpoints
 from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indices, match_breakpoints, mismatch_regions_with_pairwisealigner, plot_breakpoints_with_labels
 from app.cigar_utils import extract_cigar_strings
 from app.core import batch_edit_bam
-from app.utils import diff_str, find_floor_index
+from app.utils import clean_list, diff_str, find_floor_index
 import mappy as mp
 def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
@@ -237,13 +237,13 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     st.markdown("We will revisit these points and improve basecalling accuracy")
     # False positives and negatives for Ruptures
     st.markdown("#### Mismatch in Ruptures Breakpoints(Method 1) and Original Breakpoints")
-    st.markdown(f"**Mismatch Ruptures:** `{fp_ruptures}`")
-    st.markdown(f"**Mismatch Original:** `{fn_ruptures}`")
+    st.markdown(f"**Mismatch Ruptures:** `{clean_list(fp_ruptures)}`")
+    st.markdown(f"**Mismatch Original:** `{clean_list(fn_ruptures)}`")
 
     # False positives and negatives for Peaks
     st.markdown("#### Mismatch in Peaks in Gradient Breakpoints(Method 2) and Original Breakpoints")
-    st.markdown(f"**Mismatch Peaks in Gradient:** `{fp_peaks}`")
-    st.markdown(f"**Mismatch Original:** `{fn_peaks}`")
+    st.markdown(f"**Mismatch Peaks in Gradient:** `{clean_list(fp_peaks)}`")
+    st.markdown(f"**Mismatch Original:** `{clean_list(fn_peaks)}`")
     to_edit_signal_indices = fp_ruptures + fn_ruptures + fp_peaks + fn_peaks
     to_edit_signal_indices=sorted(set(to_edit_signal_indices))
 
@@ -270,7 +270,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         help="Points closer than the specified interval of signal index units to each other will not be edited."
     )
     # st.text(f"Proximity Skip Interval: Points closer than {filter_interval} signal index units to each other will not be edited.")
-    st.markdown(f"**Points to Revisit:** `{filter_signal_indices(to_edit_signal_indices,filter_interval)}`")
+    st.markdown(f"**Points to Revisit:** `{clean_list(filter_signal_indices(to_edit_signal_indices,filter_interval))}`")
     st.markdown(f"**Total Number of Points to Revisit:** `{len(filter_signal_indices(to_edit_signal_indices,filter_interval))}`")
 
     ##################################
@@ -292,7 +292,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         "Adjust Tolerance",  # Slider label
         min_value=1,         # Minimum value
         max_value=200,       # Maximum value
-        value=st.session_state.tolerance_full,             # Default value
+        # value=st.session_state.tolerance_full,             # Default value
         step=1,               # Step size
         key="tolerance_full",
         help=f"A mismatch within {st.session_state.tolerance_full} is treated as a match.",  # Dynamic help text
@@ -375,13 +375,13 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         st.markdown("We will revisit these points and improve basecalling accuracy")
         # False positives and negatives for Ruptures
         st.markdown("#### Mismatch in Ruptures Breakpoints(Method 1) and Original Breakpoints")
-        st.markdown(f"**Mismatch Ruptures:** `{fp_ruptures}`")
-        st.markdown(f"**Mismatch Original:** `{fn_ruptures}`")
+        st.markdown(f"**Mismatch Ruptures:** `{clean_list(fp_ruptures)}`")
+        st.markdown(f"**Mismatch Original:** `{clean_list(fn_ruptures)}`")
 
         # False positives and negatives for Peaks
         st.markdown("#### Mismatch in Peaks in Gradient Breakpoints(Method 2) and Original Breakpoints")
-        st.markdown(f"**Mismatch Peaks in Gradient:** `{fp_peaks}`")
-        st.markdown(f"**Mismatch Original:** `{fn_peaks}`")
+        st.markdown(f"**Mismatch Peaks in Gradient:** `{clean_list(fp_peaks)}`")
+        st.markdown(f"**Mismatch Original:** `{clean_list(fn_peaks)}`")
 
     
     # to_edit_signal_indices = fp_peaks + fn_peaks
@@ -607,9 +607,11 @@ if __name__ == "__main__":
             # Limit the number of IDs shown in the dropdown for performance reasons
             read_ids_subset = read_ids[:100]  # Show only the first 100 IDs for performance
             # Create a dropdown menu for selecting a read ID
+            default_index = 5 if len(read_ids_subset) > 5 else 0
             read_id = st.selectbox(
                 "Select a Read ID to process:",
                 options=read_ids_subset,
+                index=default_index,
             )
 
         except Exception as e:

@@ -292,7 +292,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         "Adjust Tolerance",  # Slider label
         min_value=1,         # Minimum value
         max_value=200,       # Maximum value
-        # value=st.session_state.tolerance_full,             # Default value
+        value=st.session_state.tolerance_full,             # Default value
         step=1,               # Step size
         key="tolerance_full",
         help=f"A mismatch within {st.session_state.tolerance_full} is treated as a match.",  # Dynamic help text
@@ -520,6 +520,9 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
 
 
 
+
+
+
     
     
 #(matched_ruptures_algorithm, matched_ruptures_method, fp_ruptures, fn_ruptures), (matched_peaks_algorithm, matched_peaks_method, fp_peaks, fn_peaks)
@@ -527,7 +530,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     
 if __name__ == "__main__":
     # port = int(os.environ.get("PORT", 8501))
-
+    
     # Run the Streamlit app
     # os.system(f"streamlit run app.py --server.port={port} --server.address=0.0.0.0")
     
@@ -594,7 +597,7 @@ if __name__ == "__main__":
         #     "Enter Read ID to process:",
         #     value="fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138"
         # )
-
+        # process_bam_file(input_path)
         read_ids = []
         try:
             with pysam.AlignmentFile(str(input_path), "rb",check_sq=False) as bam_file:
@@ -607,11 +610,11 @@ if __name__ == "__main__":
             # Limit the number of IDs shown in the dropdown for performance reasons
             read_ids_subset = read_ids[:100]  # Show only the first 100 IDs for performance
             # Create a dropdown menu for selecting a read ID
-            default_index = 5 if len(read_ids_subset) > 5 else 0
+            # default_index = 5 if len(read_ids_subset) > 2 else 0
             read_id = st.selectbox(
                 "Select a Read ID to process:",
                 options=read_ids_subset,
-                index=default_index,
+                # index=default_index,
             )
 
         except Exception as e:

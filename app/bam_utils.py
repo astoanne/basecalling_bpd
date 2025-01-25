@@ -162,3 +162,4 @@ def generate_sam_file(reference_filepath, query_seq, sam_output_path, read_id="q
                 sam_file.write(f"{read_id}\t{flag}\t{rname}\t{pos}\t{mapq}\t{cigar}\t{rnext}\t{pnext}\t{tlen}\t{seq}\t{qual}\tNM:i:{nm}\n")
 
     print(f"SAM file generated at: {sam_output_path}")
+

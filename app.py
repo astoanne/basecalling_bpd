@@ -280,9 +280,9 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     if "apply_filter_full" not in st.session_state:
         st.session_state.apply_filter_full = True  # Default value for the checkbox
     if "tolerance_full" not in st.session_state:
-        st.session_state.tolerance_full = 5
+        st.session_state.tolerance_full = 10
     if "radius" not in st.session_state:
-        st.session_state.radius = 10  # Default value for the radius slider
+        st.session_state.radius = 15  # Default value for the radius slider
     if "filter_interval_full" not in st.session_state:
         st.session_state.filter_interval_full = 20  # Default value for the filter interval slider
 
@@ -306,13 +306,13 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         if st.session_state.apply_filter_full_checkbox == False:
             # Only update tolerance if it is exactly 5
             # (the 'default' you wanted to override)
-            if st.session_state.tolerance_full == 5:  # Check for the default value
-                st.session_state.tolerance_full = 20
+            if st.session_state.tolerance_full == 10:  # Check for the default value
+                st.session_state.tolerance_full = 5
                 
-            if st.session_state.radius == 10:  # Check for the default value
-                st.session_state.radius = 7  # Set a new default for radius
+            if st.session_state.radius == 15:  # Check for the default value
+                st.session_state.radius = 20  # Set a new default for radius
             if st.session_state.filter_interval_full == 20:  # Check for the default value
-                st.session_state.filter_interval_full = 90  # Set a new default for filter_interval_full
+                st.session_state.filter_interval_full = 120  # Set a new default for filter_interval_full
    # Add a range slider for selecting start and end
     start=0
     end=len(io_read_unaligned.dacs)
@@ -507,7 +507,122 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     st.write(f"Edited file stored in: `{edited_path}`, and re-alignment information stored in: `{sam_output_file}`")
 
     
+    # ##################find best hyperparameter
+    # # Tolerance values to sweep over
+    # tolerance_values = st.multiselect(
+    #     label="Select Tolerance Values for Sweep",
+    #     options=[3,4,5,6,7, 10, 20, 50, 100],
+    #     default=[5, 20]
+    # )
 
+    # # Proximity skip intervals
+    # filter_interval_values = st.multiselect(
+    #     label="Select Proximity Skip Intervals",
+    #     options=[5, 10,15, 20,30,40, 50, 90, 120],
+    #     default=[20, 90]
+    # )
+
+    # # Radius values
+    # radius_values = st.multiselect(
+    #     label="Select Radius Values",
+    #     options=[5,6, 7,8,9, 10,15, 20, 30, 40, 50],
+    #     default=[7, 10]
+    # )
+
+    # # Button to run the sweep
+    # if st.button("Run Parameter Sweep"):
+    #     results = []
+
+    #     for tolerance_full in tolerance_values:
+    #         for filter_interval_full in filter_interval_values:
+    #             for radius in radius_values:
+
+    #                 # 1) Analyze breakpoints with the original method
+    #                 # We’ll define start=0, end=len(original_signal)
+    #                 start = 0
+    #                 end = len(original_signal)
+    #                 algorithm_breakpoints = io_read_unaligned.query_to_signal
+    #                 # filter them for the segment
+    #                 # This is simple, but if you do something more advanced, adapt accordingly:
+    #                 algorithm_breakpoints = [b for b in algorithm_breakpoints if start <= b <= end]
+
+    #                 # 2) Analyze breakpoints with your other methods
+    #                 ruptures_breakpoints = analyze_ruptures_breakpoints(original_signal, start, end)
+    #                 signal_gradient_breakpoints = analyze_signal_gradients_no_plot(original_signal, start, end)
+
+    #                 # 3) Mismatch detection
+    #                 # match original vs ruptures
+    #                 _, _, fp_ruptures, fn_ruptures = match_breakpoints(algorithm_breakpoints, ruptures_breakpoints, tolerance_full)
+    #                 _, _, fp_peaks, fn_peaks = match_breakpoints(algorithm_breakpoints, signal_gradient_breakpoints, tolerance_full)
+
+    #                 # 4) Aggregate mismatch indices
+    #                 to_edit_signal_indices = sorted(
+    #                     set(fp_peaks + fn_peaks + fp_ruptures + fn_ruptures)
+    #                 )
+    #                 to_edit_signal_indices = filter_indices_by_mismatch_regions(to_edit_signal_indices, mismatched_regions)
+    #                 # 5) Filter signal indices by the proximity skip interval
+    #                 to_edit_signal_indices = filter_signal_indices(to_edit_signal_indices, filter_interval_full)
+
+    #                 # 6) Edit the sequence (using the selected radius)
+    #                 new_seq = batch_edit_bam(
+    #                     input_path=input_path,
+    #                     edited_path=edited_path,
+    #                     read_id=read_id,
+    #                     seq1=io_read_original.seq,
+    #                     seq2=io_read_second.seq,
+    #                     query_to_signal1=io_read_original.query_to_signal,
+    #                     query_to_signal2=io_read_second.query_to_signal,
+    #                     signal_indices=to_edit_signal_indices,
+    #                     radius=radius,
+    #                 )
+
+    #                 # 7) Realign new_seq and compute accuracy
+    #                 #    (Using mappy for demonstration.)
+    #                 aligner = mp.Aligner(str(reference_filepath), preset="map-hifi")
+    #                 if not aligner:
+    #                     raise Exception("Failed to initialize the aligner.")
+
+    #                 best_acc = 0.0
+    #                 best_cigar = ""
+    #                 for aln in aligner.map(new_seq):
+    #                     if aln.is_primary:
+    #                         cigar_new = aln.cigar_str
+    #                         nm_new = aln.NM  # mismatch count
+    #                         acc_dict_new = compute_accuracy_from_cigar_and_nm(cigar_new, nm_new)
+    #                         if acc_dict_new["accuracy"] > best_acc:
+    #                             best_acc = acc_dict_new["accuracy"]
+    #                             best_cigar = cigar_new
+
+    #                 # Store results
+    #                 results.append({
+    #                     "Tolerance": tolerance_full,
+    #                     "ProximityInterval": filter_interval_full,
+    #                     "Radius": radius,
+    #                     "Accuracy": best_acc,
+    #                     "CIGAR": best_cigar,
+    #                     "NumEditedPoints": len(to_edit_signal_indices),
+    #                 })
+
+    #     # Convert to dataframe for display
+    #     df_results = pd.DataFrame(results)
+    #     # Sort by best accuracy descending
+    #     df_results.sort_values(by="Accuracy", ascending=False, inplace=True)
+
+    #     st.subheader("Sweep Results")
+    #     st.dataframe(df_results.reset_index(drop=True))
+
+    #     # Show best row
+    #     if not df_results.empty:
+    #         best_row = df_results.iloc[0]
+    #         st.markdown(f"### Best Combination")
+    #         st.markdown(
+    #             f"- **Tolerance:** {best_row['Tolerance']}\n"
+    #             f"- **Proximity Interval:** {best_row['ProximityInterval']}\n"
+    #             f"- **Radius:** {best_row['Radius']}\n"
+    #             f"- **Accuracy:** {best_row['Accuracy']:.4f}\n"
+    #             f"- **CIGAR:** {best_row['CIGAR']}\n"
+    #             f"- **Edited Points:** {best_row['NumEditedPoints']}"
+    #         )
 
 
 
@@ -610,11 +725,11 @@ if __name__ == "__main__":
             # Limit the number of IDs shown in the dropdown for performance reasons
             read_ids_subset = read_ids[:100]  # Show only the first 100 IDs for performance
             # Create a dropdown menu for selecting a read ID
-            # default_index = 5 if len(read_ids_subset) > 2 else 0
+            default_index = 7 if len(read_ids_subset) >= 1 else 0
             read_id = st.selectbox(
                 "Select a Read ID to process:",
                 options=read_ids_subset,
-                # index=default_index,
+                index=default_index,
             )
 
         except Exception as e:

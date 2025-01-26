@@ -1,5 +1,7 @@
 
 import numpy as np
+import base64
+from pathlib import Path
 def diff_str(str1, str2):
     """
     Compare two strings and return all differences as a list of tuples.
@@ -51,3 +53,23 @@ def clean_list(input_list):
             cleaned.append(item)
     return cleaned
 
+
+
+def create_download_link(file_path: str, link_text: str = None) -> str:
+    """
+    Create a clickable download link using an HTML anchor tag with base64-encoded data.
+    :param file_path: Local path to the file you want to enable for download.
+    :param link_text: The text displayed in the link (defaults to the file name if not provided).
+    :return: A string containing an HTML anchor tag.
+    """
+    file_path = Path(file_path)
+    link_text = link_text or file_path.name
+
+    # Read and encode the file
+    with open(file_path, 'rb') as f:
+        file_data = f.read()
+    b64_data = base64.b64encode(file_data).decode()
+
+    # You can customize the MIME type depending on your file.
+    # For text-based files, "data:text/plain" might be more appropriate, or "data:application/octet-stream" for generic.
+    return f'<a href="data:application/octet-stream;base64,{b64_data}" download="{file_path.name}">{link_text}</a>'

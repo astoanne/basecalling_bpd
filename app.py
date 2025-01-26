@@ -16,7 +16,7 @@ from app.bpd_ruptures import analyze_ruptures_breakpoints
 from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indices, match_breakpoints, mismatch_regions_with_pairwisealigner, plot_breakpoints_with_labels
 from app.cigar_utils import extract_cigar_strings
 from app.core import batch_edit_bam
-from app.utils import clean_list, diff_str, find_floor_index
+from app.utils import clean_list, create_download_link, diff_str, find_floor_index
 import mappy as mp
 def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
@@ -93,8 +93,8 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     ## demonstrate
     ##plot original signal
     original_signal = io_read_unaligned.dacs
-    start_default = 4400
-    end_default = 4600
+    start_default = 7100
+    end_default = 7300
 
     # Streamlit UI
     st.title("Breakpoint Detection: Partial Signal for Demonstration")
@@ -505,8 +505,14 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
 
     sam_output_file = f"{output_folder}/{edited_filename}.sam"
     generate_sam_file(reference_filepath, new_seq1, sam_output_file, read_id, quality_char="I")
-    st.write(f"Edited file stored in: `{edited_path}`, and re-alignment information stored in: `{sam_output_file}`")
-
+    # st.write(f"Edited file stored in: `{edited_path}`, and re-alignment information stored in: `{sam_output_file}`")
+    edited_link = create_download_link(edited_path)
+    sam_link = create_download_link(sam_output_file)
+    st.markdown(
+        f"Edited file stored in: {edited_link}, "
+        f"and re-alignment information stored in: {sam_link}",
+        unsafe_allow_html=True
+    )
     
     # ##################find best hyperparameter
     # # Tolerance values to sweep over

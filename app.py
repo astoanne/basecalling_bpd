@@ -249,7 +249,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
 
     st.markdown("---")
     
-    apply_filter = st.checkbox("Skip matched regions", value=False)
+    apply_filter = st.checkbox("Skip matched regions", value=False, help="Exclude matched (aligned) parts of the sequence from editing.")
     mismatched_regions=mismatch_regions_with_pairwisealigner(
         io_read_original.seq, 
         io_read_original.ref_seq, 
@@ -398,7 +398,8 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         "Skip matched regions",
         value=st.session_state.apply_filter_full,
         key="apply_filter_full_checkbox",
-        on_change=apply_filter_override
+        on_change=apply_filter_override,
+        help="Exclude matched (aligned) parts of the sequence from editing."
     )
     st.session_state.apply_filter_full = apply_filter_full
 
@@ -419,7 +420,7 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     if apply_filter_full:
         to_edit_signal_indices = filter_indices_by_mismatch_regions(to_edit_signal_indices, mismatched_regions)
 
-    st.text(f"Proximity Skip Interval: Points closer than {filter_interval_full} signal index units to each other will not be edited.")
+    # st.text(f"Proximity Skip Interval: Points closer than {filter_interval_full} signal index units to each other will not be edited.")
     st.markdown(f"**Total Number of Points to Revisit:** `{len(to_edit_signal_indices)}`")
 
     # Filter signal indices based on the updated filter interval

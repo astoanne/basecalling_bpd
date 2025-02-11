@@ -1,22 +1,19 @@
 import os
 from pathlib import Path
 from datetime import datetime
-import sys
 from matplotlib import pyplot as plt
 import pysam
 import streamlit as st
 from remora import io
 import pandas as pd
-import numpy as np
 import pod5
-from app.accuracy import calculate_accuracy_error_qscore_from_md_and_cigar, compute_accuracy, compute_accuracy_from_cigar_and_nm, pretty_print_acc
-from app.bam_utils import extract_md_tag, generate_fastq, generate_sam_file, get_cigar_and_md_tag
+from app.accuracy import compute_accuracy_from_cigar_and_nm, pretty_print_acc
+from app.bam_utils import generate_sam_file
 from app.bpd_gradients import analyze_signal_gradients, analyze_signal_gradients_no_plot
 from app.bpd_ruptures import analyze_ruptures_breakpoints
 from app.bpd_utils import filter_indices_by_mismatch_regions, filter_signal_indices, match_breakpoints, mismatch_regions_with_pairwisealigner, plot_breakpoints_with_labels
-from app.cigar_utils import extract_cigar_strings
 from app.core import batch_edit_bam
-from app.utils import clean_list, create_download_link, diff_str, find_floor_index
+from app.utils import clean_list, create_download_link, find_floor_index
 import mappy as mp
 def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename):
     
@@ -31,8 +28,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     st.subheader("Original Unaligned Read")
     st.write(f"Input Path: `{input_path}`")
     st.write(f"Basecalls Length: {io_read_unaligned.seq_len}")
-    # st.write(f"Reference Mapping Length: {io_read_unaligned.ref_seq_len}")
-    # st.write(f"Reference Location: {io_read_unaligned.ref_reg}")
 
     #Original aligned read
     bam_fh = io.ReadIndexedBam(original_aligned_path)
@@ -46,21 +41,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     st.write(f"Reference Location: {io_read_original.ref_reg}")
 
     st.subheader("Original Read Accuracy")
-    # temp_file = f"{output_folder}/tempfile_for_alignment.fq"
-    # original_acc_temp_sam_file = f"{output_folder}/tempfile_for_alignment.sam"
-    # generate_fastq(io_read_original.seq, temp_file, read_id, quality_char="I")
-
-    ################make minimap
-
-
-
-
-
-
-
-    ########################
-
-
     aligner = mp.Aligner(str(reference_filepath), preset="map-hifi")  # Preset for high-quality reads
     if not aligner:
         raise Exception("Failed to initialize the aligner.")
@@ -108,9 +88,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         step=1,
         help="Only the selected range of the signal is displayed for demonstration purposes."
     )
-
-    # Display selected range
-    # st.write(f"Selected range: Start = {start}, End = {end}")
 
     # Extract the selected segment
     selected_segment = original_signal[start:end]
@@ -317,9 +294,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
     start=0
     end=len(io_read_unaligned.dacs)
 
-    # Display selected range
-    # st.write(f"Selected range: Start = {start}, End = {end}")
-
     # Extract the selected segment
     selected_segment = original_signal[start:end]
 
@@ -382,16 +356,9 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         st.markdown("#### Mismatch in Peaks in Gradient Breakpoints(Method 2) and Original Breakpoints")
         st.markdown(f"**Mismatch Peaks in Gradient:** `{clean_list(fp_peaks)}`")
         st.markdown(f"**Mismatch Original:** `{clean_list(fn_peaks)}`")
-
-    
-    # to_edit_signal_indices = fp_peaks + fn_peaks
+  
     to_edit_signal_indices = fp_peaks + fn_peaks+fp_ruptures + fn_ruptures
-    # fp_ruptures + fn_ruptures
-    # + fp_peaks + fn_peaks ##TODO
-    to_edit_signal_indices=sorted(set(to_edit_signal_indices))##TODO
-
-    # intervals=[ (935, 945), (2520, 2525), (4055, 4065), (4445, 4455), (5350, 5360), (5475, 5480), (5550, 5555), (5585, 5590), (6270, 6275), (6285, 6290), (6370, 6380), (6720, 6725), (6740, 6745), (8470, 8490), (8495, 8500), (8505, 8510), (8515, 8520), (8965, 8970), (10160, 10165), (10180, 10190), (10425, 10430), (10470, 10480), (10570, 10575), (10615, 10625), (10950, 10975), (11000, 11015), (11020, 11060), (11285, 11290), (11330, 11350), (12525, 12530), (12560, 12570), (12585, 12595), (12715, 12720), (12730, 12750), (12795, 12805), (14125, 14170), (14260, 14285), (14290, 14295), (15015, 15030), (15295, 15335), (15345, 15355), (15360, 15365), (15390, 15400), (15705, 15725), (16585, 16590), (16595, 16605), (16615, 16630), (16865, 16870), (17000, 17005), (17015, 17020), (18265, 18295), (18300, 18310), (18320, 18335), (18410, 18420), (19610, 19620), (20470, 20485), (20500, 20505), (21905, 21910), (22395, 22400), (22625, 22650), (22675, 22680), (22690, 22695), (22700, 22710), (22870, 22875), (24660, 24665), (24940, 24950), (24970, 24975), (24980, 24995), (25055, 25070), (25080, 25095), (25300, 25305), (27430, 27435), (27635, 27645), (27800, 27805), (27825, 27835), (27840, 27860), (27865, 27870), (28140, 28145), (28305, 28310), (28320, 28325), (28350, 28355), (28380, 28415), (28560, 28565), (28685, 28700), (28785, 28795), (29360, 29370), (30185, 30200), (30235, 30245), (30420, 30455), (30465, 30480), (31235, 31250), (33310, 33325), (33410, 33415), (33430, 33435), (33805, 33815), (34265, 34290), (34305, 34310), (34340, 34355), (34475, 34495), (34520, 34535), (34560, 34565), (34600, 34615), (34855, 34865), (34870, 34880), (34895, 34900), (34915, 34920), (34930, 34935), (34940, 34945), (35005, 35035), (35050, 35065), (35075, 35080), (35120, 35165), (35245, 35255), (35290, 35315), (35325, 35330), (35335, 35340), (35395, 35400), (35480, 35505), (35550, 35565), (35620, 35625), (35635, 35640), (35650, 35660), (35685, 35690), (35695, 35700), (35715, 35725), (35780, 35785), (35840, 35870), (35905, 35910), (35915, 35930), (35965, 35980), (36000, 36010), (36050, 36070), (36150, 36155), (36215, 36225), (36230, 36240), (36260, 36280), (36325, 36335), (36345, 36350), (36460, 36470), (36510, 36515), (36560, 36575), (36580, 36590), (36595, 36615), (36670, 36675), (36690, 36725), (36820, 36830), (36850, 36865), (37025, 37035), (37155, 37160), (37225, 37230), (37495, 37505), (37510, 37515), (37565, 37570), (37620, 37630), (37690, 37705), (38095, 38105), (38560, 38570), (40400, 40410), (41280, 41290), (41300, 41320), (41340, 41345), (41480, 41495), (41520, 41525), (43255, 43290), (43300, 43305), (43320, 43325), (43345, 43355), (43360, 43365), (43370, 43380), (43385, 43425), (43460, 43475), (43495, 43505), (43555, 43570), (43730, 43740), (43800, 43815), (45050, 45055), (45205, 45685)]
-    # to_edit_signal_indices = [(start + end) // 2 for start, end in intervals]
+    to_edit_signal_indices=sorted(set(to_edit_signal_indices))
 
     # Checkbox to toggle filtering
     apply_filter_full = st.checkbox(
@@ -402,8 +369,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         help="Exclude matched (aligned) parts of the sequence from editing."
     )
     st.session_state.apply_filter_full = apply_filter_full
-
-    # Automatically adjust `radius` and `filter_interval_full` when the checkbox is checked
 
     # Slider for Proximity Skip Interval
     filter_interval_full = st.slider(
@@ -461,24 +426,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
 
     ########Re-aligned############
     st.subheader("Accuracy")
-    # temp_file = f"{output_folder}/tempfile_for_alignment.fq"
-    # generate_fastq(new_seq1, temp_file, read_id, quality_char="I")
-    
-    # # Step 1: Run the command using the variable
-    # command = f'minimap2/minimap2 -ax lr:hq "{reference_filepath}" "{temp_file}" > "{sam_file}"'
-    # # command = f'~/dorado/bin/dorado aligner "{reference_filepath}" "{edited_path}" --output-dir "{output_folder}"'
-    # # command = f'~/minimap2/minimap2 -ax lr:hq "{reference_filepath}" "{edited_path}" > "{output_folder}/{edited_filename}"'
-    # # command = f'~/minimap2/minimap2 -a "{reference_filepath}" "{edited_path}" > "{output_folder}/test.sam"'
-    # print(f"Running command: {command}") 
-    # os.system(command)
-    # st.markdown(f"Done. Realigned Edited BAM will be stored in:\n`realigned/{edited_filename}`")
-
-    
-    ####################################
-    # edited_cigar, edited_md=get_cigar_and_md_tag(output_path,read_id)
-    # acc_dict_ori=compute_accuracy(original_acc_temp_sam_file)
-    # acc_dict_new=calculate_accuracy_error_qscore_from_md_and_cigar(edited_cigar, edited_md)
-    # acc_dict_new=compute_accuracy(sam_file)
 
     aligner = mp.Aligner(str(reference_filepath), preset="map-hifi")  # Preset for high-quality reads
     if not aligner:
@@ -499,7 +446,6 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
 
             
     with st.expander("CIGAR String Comparison"):
-        # st.markdown(f"**Original CIGAR String:** `{io_read_original.full_align['cigar']}`")
         st.markdown(f"**Original CIGAR String:** `{cigar_ori}`")
         st.markdown(f"**New CIGAR String:** `{cigar_new}`")
 
@@ -513,160 +459,14 @@ def main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_
         f"and re-alignment information stored in: {sam_link}",
         unsafe_allow_html=True
     )
-    
-    # ##################find best hyperparameter
-    # # Tolerance values to sweep over
-    # tolerance_values = st.multiselect(
-    #     label="Select Tolerance Values for Sweep",
-    #     options=[3,4,5,6,7, 10, 20, 50, 100],
-    #     default=[5, 20]
-    # )
-
-    # # Proximity skip intervals
-    # filter_interval_values = st.multiselect(
-    #     label="Select Proximity Skip Intervals",
-    #     options=[5, 10,15, 20,30,40, 50, 90, 120],
-    #     default=[20, 90]
-    # )
-
-    # # Radius values
-    # radius_values = st.multiselect(
-    #     label="Select Radius Values",
-    #     options=[5,6, 7,8,9, 10,15, 20, 30, 40, 50],
-    #     default=[7, 10]
-    # )
-
-    # # Button to run the sweep
-    # if st.button("Run Parameter Sweep"):
-    #     results = []
-
-    #     for tolerance_full in tolerance_values:
-    #         for filter_interval_full in filter_interval_values:
-    #             for radius in radius_values:
-
-    #                 # 1) Analyze breakpoints with the original method
-    #                 # We’ll define start=0, end=len(original_signal)
-    #                 start = 0
-    #                 end = len(original_signal)
-    #                 algorithm_breakpoints = io_read_unaligned.query_to_signal
-    #                 # filter them for the segment
-    #                 # This is simple, but if you do something more advanced, adapt accordingly:
-    #                 algorithm_breakpoints = [b for b in algorithm_breakpoints if start <= b <= end]
-
-    #                 # 2) Analyze breakpoints with your other methods
-    #                 ruptures_breakpoints = analyze_ruptures_breakpoints(original_signal, start, end)
-    #                 signal_gradient_breakpoints = analyze_signal_gradients_no_plot(original_signal, start, end)
-
-    #                 # 3) Mismatch detection
-    #                 # match original vs ruptures
-    #                 _, _, fp_ruptures, fn_ruptures = match_breakpoints(algorithm_breakpoints, ruptures_breakpoints, tolerance_full)
-    #                 _, _, fp_peaks, fn_peaks = match_breakpoints(algorithm_breakpoints, signal_gradient_breakpoints, tolerance_full)
-
-    #                 # 4) Aggregate mismatch indices
-    #                 to_edit_signal_indices = sorted(
-    #                     set(fp_peaks + fn_peaks + fp_ruptures + fn_ruptures)
-    #                 )
-    #                 to_edit_signal_indices = filter_indices_by_mismatch_regions(to_edit_signal_indices, mismatched_regions)
-    #                 # 5) Filter signal indices by the proximity skip interval
-    #                 to_edit_signal_indices = filter_signal_indices(to_edit_signal_indices, filter_interval_full)
-
-    #                 # 6) Edit the sequence (using the selected radius)
-    #                 new_seq = batch_edit_bam(
-    #                     input_path=input_path,
-    #                     edited_path=edited_path,
-    #                     read_id=read_id,
-    #                     seq1=io_read_original.seq,
-    #                     seq2=io_read_second.seq,
-    #                     query_to_signal1=io_read_original.query_to_signal,
-    #                     query_to_signal2=io_read_second.query_to_signal,
-    #                     signal_indices=to_edit_signal_indices,
-    #                     radius=radius,
-    #                 )
-
-    #                 # 7) Realign new_seq and compute accuracy
-    #                 #    (Using mappy for demonstration.)
-    #                 aligner = mp.Aligner(str(reference_filepath), preset="map-hifi")
-    #                 if not aligner:
-    #                     raise Exception("Failed to initialize the aligner.")
-
-    #                 best_acc = 0.0
-    #                 best_cigar = ""
-    #                 for aln in aligner.map(new_seq):
-    #                     if aln.is_primary:
-    #                         cigar_new = aln.cigar_str
-    #                         nm_new = aln.NM  # mismatch count
-    #                         acc_dict_new = compute_accuracy_from_cigar_and_nm(cigar_new, nm_new)
-    #                         if acc_dict_new["accuracy"] > best_acc:
-    #                             best_acc = acc_dict_new["accuracy"]
-    #                             best_cigar = cigar_new
-
-    #                 # Store results
-    #                 results.append({
-    #                     "Tolerance": tolerance_full,
-    #                     "ProximityInterval": filter_interval_full,
-    #                     "Radius": radius,
-    #                     "Accuracy": best_acc,
-    #                     "CIGAR": best_cigar,
-    #                     "NumEditedPoints": len(to_edit_signal_indices),
-    #                 })
-
-    #     # Convert to dataframe for display
-    #     df_results = pd.DataFrame(results)
-    #     # Sort by best accuracy descending
-    #     df_results.sort_values(by="Accuracy", ascending=False, inplace=True)
-
-    #     st.subheader("Sweep Results")
-    #     st.dataframe(df_results.reset_index(drop=True))
-
-    #     # Show best row
-    #     if not df_results.empty:
-    #         best_row = df_results.iloc[0]
-    #         st.markdown(f"### Best Combination")
-    #         st.markdown(
-    #             f"- **Tolerance:** {best_row['Tolerance']}\n"
-    #             f"- **Proximity Interval:** {best_row['ProximityInterval']}\n"
-    #             f"- **Radius:** {best_row['Radius']}\n"
-    #             f"- **Accuracy:** {best_row['Accuracy']:.4f}\n"
-    #             f"- **CIGAR:** {best_row['CIGAR']}\n"
-    #             f"- **Edited Points:** {best_row['NumEditedPoints']}"
-    #         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-#(matched_ruptures_algorithm, matched_ruptures_method, fp_ruptures, fn_ruptures), (matched_peaks_algorithm, matched_peaks_method, fp_peaks, fn_peaks)
-
-    
+        
 if __name__ == "__main__":
-    # port = int(os.environ.get("PORT", 8501))
-    
-    # Run the Streamlit app
-    # os.system(f"streamlit run app.py --server.port={port} --server.address=0.0.0.0")
-    
 
     st.title("Improved Basecalling with Breakpoint Detection")
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     edited_filename = f"edited-{timestamp}"
     print("edited_bam will be stored in: "+edited_filename+'.bam')
-    # st.markdown(f"### Edited BAM will be stored in:\n`{edited_filename}`")
-    
-
-    # input_path = test_data_root / "dorado-basecalled-result-aligned-mv-tables-fast-unaligned.bam"
-    # original_aligned_path = test_data_root / "dorado-basecalled-result-aligned-mv-tables-fast.bam"
     test_data_root = Path(".") / "data"
     output_folder = test_data_root / "realigned"
     
@@ -677,8 +477,6 @@ if __name__ == "__main__":
 
 
     edited_path = test_data_root / f"{edited_filename}.bam"
-    # output_path = output_folder / f"{edited_filename}.bam"
-    # File uploaders for all required files
     uploaded_pod5_file = st.file_uploader("Upload your POD5 file", type=["pod5"])
     uploaded_input_file = st.file_uploader("Upload your unaligned BAM file", type=["bam"])
     uploaded_aligned_file = st.file_uploader("Upload your original aligned BAM file", type=["bam"])
@@ -715,11 +513,6 @@ if __name__ == "__main__":
             f.write(uploaded_second_aligned_file.getbuffer())
 
         # Input for Read ID with a default value
-        # read_id = st.text_input(
-        #     "Enter Read ID to process:",
-        #     value="fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138"
-        # )
-        # process_bam_file(input_path)
         read_ids = []
         try:
             with pysam.AlignmentFile(str(input_path), "rb",check_sq=False) as bam_file:
@@ -742,29 +535,5 @@ if __name__ == "__main__":
         except Exception as e:
             st.error(f"Error reading BAM file: {e}")
 
-        # Display confirmation of processed files
-        # st.write(f"Files used:")
-        # st.write(f"- POD5 File: {pod5_path}")
-        # st.write(f"- Input BAM: {input_path}")
-        # st.write(f"- Original Aligned BAM: {original_aligned_path}")
-        # st.write(f"- Reference File: {reference_filepath}")
-        # st.write(f"- Second Aligned BAM: {second_aligned_path}")       
         
         main(test_data_root,read_id,input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename)
-    # else:
-    #     # st.write("Please upload all required files.")
-    #     if st.button("Use sample"):
-    #         input_dir=Path(".") / "input"
-    #         pod5_path = input_dir / 'signal.pod5'
-    #         input_path = input_dir / 'unaligned.bam'
-    #         original_aligned_path = input_dir / 'aligned.bam'
-    #         reference_filepath = input_dir / 'chr13.mmi'
-    #         second_aligned_path = input_dir / 'second.bam'
-    #         # Display confirmation of processed files
-    #         st.write(f"Files used:")
-    #         st.write(f"- POD5 File: {pod5_path}")
-    #         st.write(f"- Input BAM: {input_path}")
-    #         st.write(f"- Original Aligned BAM: {original_aligned_path}")
-    #         st.write(f"- Reference File: {reference_filepath}")
-    #         st.write(f"- Second Aligned BAM: {second_aligned_path}")  
-    #         main(test_data_root,"fbf9c81c-fdb2-4b41-85e1-0a2bd8b5a138",input_path,original_aligned_path,second_aligned_path,output_folder,reference_filepath,edited_path,edited_filename)

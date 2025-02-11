@@ -1,0 +1,10 @@
+1. Download FASTA:
+Obtain the full FASTA file for human chromosome 13 from:
+https://www.ncbi.nlm.nih.gov/gdv/browser/genome/?id=GCF_000001405.40&chr=13
+
+2. Generate Index:
+Run the following command:
+minimap2 -d chr13.mmi chr13.fasta
+
+3. Replace Stub:
+Replace this stub file with your newly generated chr13.mmi.
